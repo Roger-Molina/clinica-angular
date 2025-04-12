@@ -1,0 +1,167 @@
+<div class="card">
+  <p-toast></p-toast>
+
+  <!-- Panel de herramientas -->
+  <div class="flex flex-wrap justify-content-between align-items-center mb-4">
+    <div class="flex align-items-center gap-2">
+      <h2 class="text-xl font-semibold m-0">Calendario</h2>
+      <p-button
+        icon="pi pi-plus"
+        label="Nuevo Evento"
+        (click)="mostrarDialogoEvento()"
+        styleClass="p-button-sm"
+      ></p-button>
+    </div>
+
+    <div class="flex align-items-center gap-2">
+      <p-button
+        icon="pi pi-chevron-left"
+        (click)="semanaAnterior()"
+        styleClass="p-button-text p-button-sm"
+      ></p-button>
+
+      <h3 class="m-0">{{ obtenerRangoSemanaActual() }}</h3>
+
+      <p-button
+        icon="pi pi-chevron-right"
+        (click)="semanaSiguiente()"
+        styleClass="p-button-text p-button-sm"
+      ></p-button>
+
+      <p-button
+        label="Hoy"
+        (click)="irAHoy()"
+        styleClass="p-button-outlined p-button-sm ml-2"
+      ></p-button>
+    </div>
+
+    <div class="flex align-items-center gap-2">
+      <!-- Reemplazar p-dropdown por p-select -->
+      <p-select
+        [options]="opcionesFiltro"
+        [(ngModel)]="filtroTipoEvento"
+        placeholder="Filtrar por tipo"
+        (onChange)="filtrarEventos()"
+      ></p-select>
+    </div>
+  </div>
+
+  <!-- Calendario semanal con horas -->
+  <div class="weekly-calendar">
+    <!-- Cabecera del calendario con los días de la semana -->
+    <div class="weekly-calendar-header">
+      <!-- Celda vacía en la esquina superior izquierda -->
+      <div class="weekly-header-hour-cell"></div>
+
+      <!-- Días de la semana -->
+      <div
+        *ngFor="let dia of diasSemana"
+        class="weekly-header-day"
+        [class.weekend]="esFinDeSemana(dia)"
+        [class.today]="esHoy(dia)"
+      >
+        <div class="weekly-day-name">{{ getDayName(dia) }}</div>
+        <div class="weekly-day-number">{{ dia.getDate() }}</div>
+      </div>
+    </div>
+
+    <!-- Cuerpo del calendario con las horas y eventos -->
+    <div class="weekly-calendar-body">
+      <!-- Filas de horas -->
+      <div *ngFor="let hora of horasDia" class="weekly-hour-row">
+        <!-- Etiqueta de hora -->
+        <div class="weekly-hour-label">{{ hora }}:00</div>
+
+        <!-- Celdas para cada día en esta hora -->
+        <div
+          *ngFor="let dia of diasSemana"
+          class="weekly-day-hour-cell"
+          [class.weekend]="esFinDeSemana(dia)"
+          [class.today]="esHoy(dia)"
+          (click)="crearEventoEnHora(dia, hora)"
+        >
+          <!-- Eventos que ocurren en esta hora y día -->
+          <div
+            *ngFor="let evento of getEventosParaHora(dia, hora)"
+            class="weekly-event"
+            [style.background-color]="evento.color"
+            [style.height.px]="getEventoAlto(evento)"
+            [style.top.px]="getEventoPosicionTop(evento, hora)"
+            [pTooltip]="evento.titulo + ' - ' + formatearHorasEvento(evento)"
+            tooltipPosition="top"
+            (click)="editarEvento(evento); $event.stopPropagation()"
+          >
+            <div class="weekly-event-title">
+              {{ getCodigoEvento(evento) }} - {{ evento.titulo }}
+            </div>
+            <div class="weekly-event-time">
+              {{ formatearFechaHora(evento.fechaInicio) }}
+              {{
+                evento.fechaFin
+                  ? "- " + formatearFechaHora(evento.fechaFin)
+                  : ""
+              }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Eventos de todo el día para la semana actual -->
+  <div
+    *ngIf="eventosTodoDia.length > 0"
+    class="mt-4 p-4 border-1 surface-border surface-card border-round"
+  >
+    <h3>Eventos de todo el día</h3>
+    <div
+      *ngFor="let evento of eventosTodoDia"
+      class="flex align-items-start mb-3 p-3 border-round"
+      [style.background-color]="evento.color + '20'"
+      [style.border-left]="'4px solid ' + evento.color"
+    >
+      <div class="flex-1">
+        <div class="flex justify-content-between">
+          <h4 class="m-0">{{ evento.titulo }}</h4>
+          <span class="text-sm text-color-secondary">{{
+            formatearFecha(evento.fechaInicio)
+          }}</span>
+        </div>
+        <p *ngIf="evento.descripcion" class="mt-2 mb-2">
+          {{ evento.descripcion }}
+        </p>
+        <span
+          class="text-xs font-semibold p-1 border-round"
+          [style.background-color]="evento.color + '40'"
+          [style.color]="evento.color"
+        >
+          {{ getTipoEventoNombre(evento.tipo) }}
+        </span>
+      </div>
+      <div class="ml-3">
+        <button
+          pButton
+          icon="pi pi-pencil"
+          class="p-button-rounded p-button-text p-button-sm mr-2"
+          (click)="editarEvento(evento)"
+        ></button>
+        <button
+          pButton
+          icon="pi pi-trash"
+          class="p-button-rounded p-button-text p-button-danger p-button-sm"
+          (click)="eliminarEvento(evento)"
+        ></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Componente de formulario de evento -->
+  <app-evento-form
+    [(visible)]="dialogoEventoVisible"
+    [evento]="eventoEnEdicion"
+    [tiposEventos]="tiposEventos"
+    [guardando]="guardando"
+    (guardar)="onGuardarEvento($event)"
+    (cancelar)="onCancelarEvento()"
+  ></app-evento-form>
+</div>

@@ -1,0 +1,96 @@
+<p-dialog 
+  [(visible)]="visible" 
+  [header]="evento ? 'Editar Evento' : 'Nuevo Evento'" 
+  [modal]="true" 
+  [style]="{width: '450px'}" 
+  [draggable]="false" 
+  [resizable]="false"
+  (onHide)="onHide()"
+>
+  <form [formGroup]="formularioEvento" (ngSubmit)="onSubmit()">
+    <div class="grid p-fluid">
+      <div class="col-12 field">
+        <label for="titulo">Título *</label>
+        <input type="text" pInputText id="titulo" formControlName="titulo" required />
+        <small *ngIf="submitted && formularioEvento.controls['titulo'].errors" class="p-error">El título es obligatorio</small>
+      </div>
+      
+      <div class="col-12 md:col-6 field">
+        <label for="fechaInicio">Fecha Inicio *</label>
+        <p-datePicker
+          id="fechaInicio" 
+          formControlName="fechaInicio" 
+          [showTime]="!formularioEvento.value.todoElDia" 
+          [showButtonBar]="true"
+          [showIcon]="true"
+          dateFormat="dd/mm/yy"
+          [readonlyInput]="true"
+        ></p-datePicker>
+        <small *ngIf="submitted && formularioEvento.controls['fechaInicio'].errors" class="p-error">La fecha de inicio es obligatoria</small>
+      </div>
+      
+      <div class="col-12 md:col-6 field">
+        <label for="fechaFin">Fecha Fin</label>
+        <p-datePicker
+          id="fechaFin" 
+          formControlName="fechaFin" 
+          [showTime]="!formularioEvento.value.todoElDia" 
+          [showButtonBar]="true"
+          [showIcon]="true"
+          dateFormat="dd/mm/yy"
+          [readonlyInput]="true"
+          [minDate]="formularioEvento.value.fechaInicio"
+        ></p-datePicker>
+      </div>
+      
+      <div class="col-12 field">
+        <div class="flex align-items-center">
+          <p-checkbox formControlName="todoElDia" [binary]="true" inputId="todoElDia"></p-checkbox>
+          <label for="todoElDia" class="ml-2">Todo el día</label>
+        </div>
+      </div>
+      
+      <div class="col-12 md:col-12 field">
+        <label for="tipo">Tipo de Evento *</label>
+        <p-selectButton
+          [options]="tipoEventoOptions"
+          formControlName="tipo"
+          optionLabel="label"
+          optionValue="value"
+        ></p-selectButton>
+        <small *ngIf="submitted && formularioEvento.controls['tipo'].errors" class="p-error">El tipo es obligatorio</small>
+      </div>
+      
+      <div class="col-12 field">
+        <label for="color">Color</label>
+        <p-colorPicker formControlName="color" [inline]="false"></p-colorPicker>
+      </div>
+      
+      <div class="col-12 field">
+        <label for="descripcion">Descripción</label>
+        <textarea 
+          pInputTextarea 
+          id="descripcion" 
+          formControlName="descripcion" 
+          [rows]="5"
+        ></textarea>
+      </div>
+    </div>
+    
+    <div class="flex justify-content-end mt-4">
+      <p-button 
+        label="Cancelar" 
+        icon="pi pi-times" 
+        (click)="onHide()" 
+        styleClass="p-button-text mr-2"
+        type="button"
+      ></p-button>
+      <p-button 
+        label="Guardar" 
+        icon="pi pi-check" 
+        type="submit" 
+        [loading]="guardando"
+      ></p-button>
+    </div>
+  </form>
+</p-dialog>
